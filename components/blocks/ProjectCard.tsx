@@ -22,12 +22,12 @@ export default function ProjectCard({ title, status, statusColor, description, h
             <Link href={href} target="_blank" className="flex items-start justify-between group-hover:opacity-80 transition-opacity">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <h2 className="text-xl font-medium">{title}</h2>
+                        <h2 className="text-sm md:text-xl font-medium">{title}</h2>
                         <Badge variant="outline" className={`text-xs px-2 py-0.5 rounded border ${getStatusClass()}`}>
                             {status}
                         </Badge>
                     </div>
-                    <p className="text-gray-400">{description}</p>
+                    <p className="text-gray-400 text-xs md:text-sm">{description}</p>
                 </div>
                 <ArrowUpRight className="text-gray-600 group-hover:text-white transition-colors" />
             </Link>

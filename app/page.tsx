@@ -5,10 +5,10 @@ import ProjectCard from "@/components/blocks/ProjectCard"
 export default function Home() {
     return (
         <main className="min-h-screen bg-black text-white p-6 md:p-12 lg:p-24">
-            <div className="w-1/3 mx-auto">
+            <div className="w-full sm:w-1/2 md:w-1/3 mx-auto">
                 <header className="mb-10">
-                    <h1 className="text-3xl font-bold mb-2">Hi, I'm Vinod KR</h1>
-                    <p className="text-gray-400 mb-6">I'm a full-stack engineer.</p>
+                    <h1 className="text-xl md:text-3xl font-bold mb-2">Hi, I&apos;m Vinod KR</h1>
+                    <p className="text-gray-400 mb-6">I&apos;m a full-stack engineer.</p>
 
                     <div className="flex space-x-4">
                         <Link target="_blank" href="https://github.com/vin-dKR" className="text-gray-400 hover:text-white">
@@ -23,7 +23,7 @@ export default function Home() {
                     </div>
                 </header>
 
-                <p className="text-gray-400 mb-8">here are my crafts</p>
+                <p className="text-gray-400 mb-8 text-xs ms:text-sm">here are my crafts</p>
 
                 <div className="space-y-12">
                     <ProjectCard
