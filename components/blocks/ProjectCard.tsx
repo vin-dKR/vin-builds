@@ -29,7 +29,7 @@ export default function ProjectCard({ title, status, statusColor, description, h
                     </div>
                     <p className="text-gray-400 text-xs md:text-sm">{description}</p>
                 </div>
-                <ArrowUpRight className="text-gray-600 group-hover:text-white transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
             </Link>
         </div>
     )
