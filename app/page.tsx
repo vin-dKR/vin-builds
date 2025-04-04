@@ -42,6 +42,13 @@ export default function Home() {
                             description="My personal portfolio website showcasing my work."
                             href="https://portfolio-vinokr.vercel.app"
                         />
+                        <ProjectCard
+                            title="Hellium AI"
+                            status="completed"
+                            statusColor="orange"
+                            description="AI powered sales assistant! Embed Hellium Bot"
+                            href="https://hellium.vercel.app/"
+                        />
                     </div>
                 </BlurFade>
             </div>

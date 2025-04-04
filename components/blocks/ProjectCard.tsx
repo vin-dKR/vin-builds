@@ -6,6 +6,8 @@ import { ArrowUpRight } from "lucide-react"
 export default function ProjectCard({ title, status, statusColor, description, href }: ProjectCardProps) {
     const getStatusClass = () => {
         switch (statusColor) {
+            case "orange":
+                return "bg-orange-950 text-orange-500 border-orange-800"
             case "green":
                 return "bg-green-950 text-green-500 border-green-800"
             case "blue":
@@ -21,7 +23,7 @@ export default function ProjectCard({ title, status, statusColor, description, h
         <div className="group">
             <Link href={href} target="_blank" className="flex items-start justify-between group-hover:opacity-80 transition-opacity">
                 <div>
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3">
                         <h2 className="text-sm md:text-xl font-medium">{title}</h2>
                         <Badge variant="outline" className={`text-xs px-2 py-0.5 rounded border ${getStatusClass()}`}>
                             {status}
