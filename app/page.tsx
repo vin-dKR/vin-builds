@@ -6,7 +6,7 @@ import { BlurFade } from "@/components/magicui/blur-fade"
 export default function Home() {
     return (
         <main className="min-h-screen bg-black text-white p-6 md:p-12 lg:p-24">
-            <div className="w-full lg:w-1/3 md:w-1/4 mx-auto">
+            <div className="w-full sm:w-5/6 md:w-2/3 lg:w-1/2 xl:w-1/3 2xl:w-1/4 mx-auto">
                 <BlurFade delay={0.25} inView>
                     <header className="mb-10">
                         <h1 className="text-xl md:text-3xl font-bold">Hi, I&apos;m Vinod KR</h1>
@@ -19,7 +19,7 @@ export default function Home() {
                             <Link target="_blank" href="https://twitter.com/always_VinodKr" className="text-gray-400 hover:text-white">
                                 <Twitter size={20} />
                             </Link>
-                            <Link target="_blank" href="#" className="text-gray-400 hover:text-white">
+                            <Link target="_blank" href="https://portfolio-vinokr.vercel.app/" className="text-gray-400 hover:text-white">
                                 <Globe size={20} />
                             </Link>
                         </div>
