@@ -29,6 +29,13 @@ export default function Home() {
 
                     <div className="space-y-8">
                         <ProjectCard
+                            title="Vin-UI"
+                            status="on-going"
+                            statusColor="blue"
+                            description="personal React components library."
+                            href="https://vin-ui.vercel.app/"
+                        />
+                        <ProjectCard
                             title="Vin-UI CLI"
                             status="completed"
                             statusColor="orange"
@@ -36,13 +43,6 @@ export default function Home() {
                             href="https://github.com/vin-dKR/vin-ui-cmd"
                         />
 
-                        <ProjectCard
-                            title="Vin-UI"
-                            status="on-going"
-                            statusColor="blue"
-                            description="personal React components library."
-                            href="/projects/Vin-UI"
-                        />
                         <ProjectCard
                             title="Portfolio"
                             status="maintained"
