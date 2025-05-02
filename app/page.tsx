@@ -29,6 +29,14 @@ export default function Home() {
 
                     <div className="space-y-8">
                         <ProjectCard
+                            title="The Orange Leaf"
+                            status="completed"
+                            statusColor="green"
+                            description="it's a restaurant."
+                            href="https://theorangeleaf.vercel.app/"
+                        />
+
+                        <ProjectCard
                             title="Vin-UI"
                             status="on-going"
                             statusColor="blue"
