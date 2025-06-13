@@ -18,6 +18,20 @@ type Project = {
 
 const projects: Project[] = [
     {
+        title: "Vin Wallpaper",
+        status: "on-going",
+        statusColor: "blue",
+        description: "AI Wallpaper x.com bot",
+        href: "https://x.com/vin_wallpapers",
+        stack: "Backend",
+        technologies: [
+            { name: "Node.js", icon: "/tech/nextjs.svg" },
+            { name: "Typescript", icon: "/tech/typescript.svg" },
+            { name: "Replicate", icon: "/tech/replicate.svg" },
+            { name: "stability-ai", icon: "/tech/stable-ai.svg" },
+        ]
+    },
+    {
         title: "The Orange Leaf",
         status: "completed",
         statusColor: "green",
