@@ -1,6 +1,9 @@
+'use client'
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -25,21 +28,48 @@ const badgeVariants = cva(
   }
 )
 
+interface BadgeProps extends VariantProps<typeof badgeVariants> {
+  asChild?: boolean
+  className?: string
+  children?: React.ReactNode
+}
+
 function Badge({
   className,
   variant,
   asChild = false,
+  children,
   ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "span"
+}: BadgeProps) {
+  const Comp = asChild ? Slot : motion.span
+
+  const motionProps = !asChild ? {
+    whileHover: {
+      scale: 1.05,
+      rotate: [-1, 1, -1, 1, 0],
+      transition: {
+        rotate: {
+          duration: 0.3,
+          ease: "easeInOut" as const,
+          times: [0, 0.25, 0.5, 0.75, 1]
+        },
+        scale: {
+          duration: 0.2,
+          ease: "easeOut" as const
+        }
+      }
+    }
+  } : {}
 
   return (
     <Comp
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}
+      {...motionProps}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   )
 }
 
