@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         description: "This is builds for VinodKR's clients.",
         images: [
             {
-                url: "/imgs/of.jpg", // You'll need to add this image to your public folder
+                url: "/imgs/of.jpg",
                 width: 1200,
                 height: 630,
                 alt: "VinodKR's Portfolio Preview",
@@ -33,15 +33,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "OnlyFans - VinodKR",
         description: "This is builds for VinodKR's clients.",
-        images: [
-            {
-                url: "/imgs/of-x.jpg",
-                width: 1200,
-                height: 630,
-                alt: "VinodKR's Portfolio Preview",
-            }
-        ],
-        creator: "@vinodkr",
+        images: ["/imgs/of-x.jpg"],
     },
 };
 
