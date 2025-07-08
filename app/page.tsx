@@ -44,9 +44,22 @@ const projects: Project[] = [
         ]
     },
     {
+        title: "Maxico Salon",
+        status: "completed",
+        statusColor: "green",
+        description: "it's a salon baby.",
+        href: "https://salon-one-ivory.vercel.app",
+        stack: "Frontend",
+        technologies: [
+            { name: "Next.js", icon: "/tech/nextjs.svg" },
+            { name: "Tailwind", icon: "/tech/tailwind.svg" },
+            { name: "Framer", icon: "/tech/framer.svg" }
+        ]
+    },
+    {
         title: "Vin-UI",
-        status: "on-going",
-        statusColor: "blue",
+        status: "maintained",
+        statusColor: "orange",
         description: "personal React components library.",
         href: "https://vin-ui.vercel.app/",
         stack: "Frontend",
@@ -59,7 +72,7 @@ const projects: Project[] = [
     {
         title: "Vin-UI CLI",
         status: "completed",
-        statusColor: "orange",
+        statusColor: "green",
         description: "CLI based on RUST(btw) for next js ui library.",
         href: "https://github.com/vin-dKR/vin-ui-cmd",
         stack: "Backend",
@@ -70,7 +83,7 @@ const projects: Project[] = [
     {
         title: "Portfolio",
         status: "maintained",
-        statusColor: "green",
+        statusColor: "orange",
         description: "My personal portfolio website showcasing my work.",
         href: "https://portfolio-vinokr.vercel.app",
         stack: "Frontend",
@@ -83,7 +96,7 @@ const projects: Project[] = [
     {
         title: "Hellium AI",
         status: "completed",
-        statusColor: "orange",
+        statusColor: "green",
         description: "AI powered sales assistant! Embed Hellium Bot",
         href: "https://hellium.vercel.app/",
         stack: "Full Stack",
