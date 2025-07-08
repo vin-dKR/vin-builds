@@ -65,6 +65,7 @@ const projects: Project[] = [
         stack: "Frontend",
         technologies: [
             { name: "React", icon: "/tech/react.svg" },
+            { name: "Next.js", icon: "/tech/nextjs.svg" },
             { name: "Tailwind", icon: "/tech/tailwind.svg" },
             { name: "Framer", icon: "/tech/framer.svg" }
         ]
