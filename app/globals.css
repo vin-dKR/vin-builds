@@ -138,3 +138,28 @@
   font-display: swap;
   src: url("/fonts/Sora-SemiBold.ttf");
 }
+
+/* Thin scrollbar for the entire site */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #333 #000;
+}
+
+/* For WebKit (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #00000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
