@@ -30,6 +30,7 @@ type ProjectCardProps = {
         name: string;
         icon: string;
     }[];
+    thumbnail?: string
 }
 
 const ProjectCard = ({
@@ -41,15 +42,28 @@ const ProjectCard = ({
     stack,
     technologies = [],
     tab,
-    previewImages,
+    thumbnail,
     designLink,
     designTool = [],
 }: ProjectCardProps) => {
 
     if (tab === "design") {
+        console.log("THUNb")
         return (
             <div className="rounded-md bg-white/4 border border-white/5 p-2 shadow-md flex flex-col">
-                {previewImages && <PreviewContainer images={previewImages} />}
+                {thumbnail && <PreviewContainer images={thumbnail} />}
+                {/*
+                {previewImages && (
+                    <Image
+                        src="/design/imgs/salon2.png"
+                        alt="kjk`"
+                        className="cover"
+                        width={400}
+                        height={400}
+                    />
+                )
+                }
+                */}
                 <div className="px-3 mb-2">
                     <h3 className="text-sm md:text-xl font-medium mb-1 ">{title}</h3>
                     <p className="text-gray-400 text-xs md:text-sm mb-2">{description}</p>
@@ -58,7 +72,15 @@ const ProjectCard = ({
                         {designTool && designTool.length > 0 && (
                             <div className="flex gap-2 items-center">
                                 {designTool.map((tool, index) => (
-                                    <BubbleLogo size="md" key={index} text={tool} index={index} />
+                                    <motion.div
+                                        key={index}
+                                        className="flex items-center rounded-full p-1"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <BubbleLogo size="md" text={tool} index={index} />
+                                    </motion.div>
                                 ))}
                             </div>
                         )}
@@ -128,7 +150,16 @@ const ProjectCard = ({
                                     transition={{ duration: 0.3 }}
                                 >
                                     {technologies.map((tech, index) => (
-                                        <BubbleLogo size="xs" key={index} text={tech} index={index} />
+                                        <motion.div
+                                            key={index}
+                                            className="flex items-center rounded-full"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <BubbleLogo size="xs" text={tech} index={index} />
+                                        </motion.div>
+
                                     ))}
                                 </motion.div>
                             </div>

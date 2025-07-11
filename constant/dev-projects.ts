@@ -18,7 +18,7 @@ export const devProjects: Project[] = [
         statusColor: "blue",
         description: "AI Wallpaper x.com bot",
         href: "https://x.com/vin_wallpapers",
-        stack: "Backend",
+        stack: "Full Stack",
         technologies: [
             { name: "Node.js", icon: "/tech/nextjs.svg" },
             { name: "Typescript", icon: "/tech/typescript.svg" },
