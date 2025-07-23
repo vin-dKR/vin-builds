@@ -13,6 +13,19 @@ type Project = {
 
 export const devProjects: Project[] = [
     {
+        title: "Web Scrapper AI",
+        status: "on-going",
+        statusColor: "blue",
+        description: "this is an ai web scrapper",
+        href: "https://github.com/vin-dKR/vin-scrapper-ai",
+        stack: "Full Stack",
+        technologies: [
+            { name: "Node.js", icon: "/tech/nextjs.svg" },
+            { name: "Typescript", icon: "/tech/typescript.svg" },
+            { name: "OpenAI", icon: "/tech/openai.svg" },
+        ]
+    },
+    {
         title: "Vin Wallpaper",
         status: "on-going",
         statusColor: "blue",
