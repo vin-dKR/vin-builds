@@ -48,7 +48,7 @@ export default function Home() {
 
                     <div className="flex flex-col w-full mb-8 ">
                         <div className="flex items-center gap-4 mb-2 justify-between">
-                            <p className="text-gray-400 text-xs ms:text-sm">here are my crafts</p>
+                            <p className="text-gray-400 text-xs ms:text-sm">proof of works</p>
 
                             <Tabs
                                 defaultValue="dev"
