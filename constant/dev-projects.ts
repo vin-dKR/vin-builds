@@ -13,6 +13,19 @@ type Project = {
 
 export const devProjects: Project[] = [
     {
+        title: "Eduents",
+        status: "maintained",
+        statusColor: "orange",
+        description: "Create Exams Effortlessly for your Coaching.",
+        href: "https://eduents.com/",
+        stack: "Full Stack",
+        technologies: [
+            { name: "Node.js", icon: "/tech/nextjs.svg" },
+            { name: "Typescript", icon: "/tech/typescript.svg" },
+            { name: "OpenAI", icon: "/tech/openai.svg" },
+        ]
+    },
+    {
         title: "Web Scrapper AI",
         status: "on-going",
         statusColor: "blue",
