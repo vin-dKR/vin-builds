@@ -40,7 +40,7 @@ export default function Home() {
                             <Link target="_blank" href="https://twitter.com/always_VinodKr" className="text-gray-400 hover:text-white">
                                 <Twitter size={20} />
                             </Link>
-                            <Link target="_blank" href="www.vinodkr.in" className="text-gray-400 hover:text-white">
+                            <Link target="_blank" href="https://vinodkr.in/" className="text-gray-400 hover:text-white">
                                 <Globe size={20} />
                             </Link>
                         </div>
