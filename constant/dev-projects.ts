@@ -17,7 +17,7 @@ export const devProjects: Project[] = [
         status: "maintained",
         statusColor: "orange",
         description: "Create Exams Effortlessly for your Coaching.",
-        href: "https://eduents.com/",
+        href: "https://github.com/vin-dKR/vin-scrapper-ai",
         stack: "Full Stack",
         technologies: [
             { name: "Node.js", icon: "/tech/nextjs.svg" },
@@ -107,7 +107,7 @@ export const devProjects: Project[] = [
         status: "maintained",
         statusColor: "orange",
         description: "My personal portfolio website showcasing my work.",
-        href: "https://portfolio-vinokr.vercel.app",
+        href: "www.vinodkr.in",
         stack: "Frontend",
         technologies: [
             { name: "Next.js", icon: "/tech/nextjs.svg" },
