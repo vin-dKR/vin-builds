@@ -13,6 +13,21 @@ type Project = {
 
 export const devProjects: Project[] = [
     {
+        title: "Libly Space",
+        status: "maintained",
+        statusColor: "orange",
+        description: "Manage Your Library Effortlessly.",
+        href: "https://libly.space",
+        stack: "Full Stack",
+        technologies: [
+            { name: "Next.js", icon: "/tech/nextjs.svg" },
+            { name: "Typescript", icon: "/tech/typescript.svg" },
+            { name: "Node.js", icon: "/tech/nodejs.svg" },
+            { name: "PostgreSQL", icon: "/tech/postgres.svg" },
+            { name: "Tailwind", icon: "/tech/tailwind.svg" }
+        ]
+    },
+    {
         title: "Eduents",
         status: "maintained",
         statusColor: "orange",
@@ -20,9 +35,11 @@ export const devProjects: Project[] = [
         href: "https://eduents.com",
         stack: "Full Stack",
         technologies: [
-            { name: "Node.js", icon: "/tech/nextjs.svg" },
+            { name: "Next.js", icon: "/tech/nextjs.svg" },
             { name: "Typescript", icon: "/tech/typescript.svg" },
             { name: "OpenAI", icon: "/tech/openai.svg" },
+            { name: "PostgreSQL", icon: "/tech/postgres.svg" },
+            { name: "Tailwind", icon: "/tech/tailwind.svg" }
         ]
     },
     {

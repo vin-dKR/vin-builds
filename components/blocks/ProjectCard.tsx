@@ -12,7 +12,7 @@ import PreviewContainer from "./PreviewContainer"
 type ProjectCardProps = {
     title: string;
     description: string;
-    tab: "dev" | "design" | "web3";
+    tab: "dev" | "design" | "web3" | "opensource";
     status?: string;
     statusColor?: "green" | "blue" | "orange" | "gray" | "amber";
     href?: string;
@@ -21,6 +21,8 @@ type ProjectCardProps = {
         name: string;
         icon: string;
     }[];
+    repository?: string;
+    pullRequestUrl?: string;
     previewImages?: {
         top: string;
         bottom: string;
@@ -30,7 +32,7 @@ type ProjectCardProps = {
         name: string;
         icon: string;
     }[];
-    thumbnail?: string
+    thumbnail?: string;
 }
 
 const ProjectCard = ({
@@ -45,10 +47,11 @@ const ProjectCard = ({
     thumbnail,
     designLink,
     designTool = [],
+    pullRequestUrl,
+    repository
 }: ProjectCardProps) => {
 
     if (tab === "design") {
-        console.log("THUNb")
         return (
             <div className="rounded-md bg-white/4 border border-white/5 p-2 shadow-md flex flex-col">
                 {thumbnail && <PreviewContainer images={thumbnail} />}
@@ -123,18 +126,31 @@ const ProjectCard = ({
             transition={{ duration: 0.5 }}
             className="group bg-white/4 p-2 rounded rounded-md border border-white/5 backdrop-blur-lg"
         >
-            <Link href={href || "#"} target="_blank" className="flex items-start justify-between group-hover:opacity-80 transition-opacity">
+            <Link
+                href={tab === "opensource" ? pullRequestUrl || href || "#" : href || "#"}
+                target="_blank"
+                className="flex items-start justify-between group-hover:opacity-80 transition-opacity"
+            >
                 <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1 justify-between">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-3 mb-1 justify-between">
+                        <div className="flex flex-col">
                             <h2 className="text-sm md:text-xl font-medium">{title}</h2>
+                            {tab === "opensource" && (
+                                <p className="text-gray-400 text-[10px] md:text-xs mt-0.5 bg-purple-950 rounded-full px-4 pb-1 w-fit">
+                                    {repository}
+                                </p>
+                            )}
                         </div>
                         {status && (
-                            <Badge variant="outline" className={`text-[8px] px-2 pb-0.5 rounded border ${getStatusClass()}`}>
+                            <Badge
+                                variant="outline"
+                                className={`text-[8px] px-2 pb-0.5 rounded border ${getStatusClass()}`}
+                            >
                                 {status}
                             </Badge>
                         )}
                     </div>
+
                     <p className="text-gray-400 text-xs md:text-sm mb-2">{description}</p>
                     {stack && (
                         <div className="flex items-center gap-2">

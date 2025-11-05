@@ -8,6 +8,7 @@ import { devProjects } from "@/constant/dev-projects"
 import { useState } from "react"
 import { designProjects } from "@/constant/design-projects"
 import { web3Projects } from "@/constant/web3-projects"
+import { openSourceContribution } from "@/constant/opensource"
 
 
 export default function Home() {
@@ -15,6 +16,8 @@ export default function Home() {
 
     const getProjectsForTab = () => {
         switch (activeTab) {
+            case "opensource":
+                return openSourceContribution
             case "design":
                 return designProjects
             case "web3":
@@ -47,7 +50,7 @@ export default function Home() {
                     </header>
 
                     <div className="flex flex-col w-full mb-8 ">
-                        <div className="flex items-center gap-4 mb-2 justify-between">
+                        <div className="flex flex-col gap-4 mb-2 justify-between">
                             <p className="text-gray-400 text-xs ms:text-sm">proof of works</p>
 
                             <Tabs
@@ -74,7 +77,14 @@ export default function Home() {
                                     >
                                         Web-3
                                     </TabsTrigger>
+                                    <TabsTrigger
+                                        value="opensource"
+                                        className="data-[state=active]:bg-black data-[state=active]:border-white/6 data-[state=active]:drop-shadow-md text-gray-200/70 data-[state=active]:text-white rounded-sm px-2 md:px-3 py-4 text-xs md:text-sm font-medium transition-all cursor-pointer"
+                                    >
+                                        Open Source
+                                    </TabsTrigger>
                                 </TabsList>
+
                             </Tabs>
                         </div>
                     </div>
@@ -84,7 +94,7 @@ export default function Home() {
                             <ProjectCard
                                 key={index}
                                 {...project}
-                                tab={activeTab as 'dev' | 'design' | 'web3'}
+                                tab={activeTab as 'dev' | 'design' | 'web3' | 'opensource'}
                             />
                         ))}
                     </div>
