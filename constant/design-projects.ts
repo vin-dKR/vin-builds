@@ -16,6 +16,20 @@ type DesignProject = {
 
 export const designProjects: DesignProject[] = [
     {
+        title: "Eduents",
+        description: "It's is platfrom to create Exams Effortlessly.",
+        href: "https://eduents.com",
+        previewImages: {
+            top: "/design/imgs/eduents.png",
+            bottom: "/design/imgs/vinui.png"
+        },
+        thumbnail: "/design/imgs/eduents.png",
+        designLink: "https://www.figma.com/design/QTQBx7bSg44JsHwW0osZN2/eduents.com?node-id=0-1&t=PZbnUMyTAdTJM34b-1",
+        designTool: [
+            { name: "Figma", icon: "/design/figma.svg" }
+        ]
+    },
+    {
         title: "Vin UI",
         description: "it is a next js cusotm component library",
         href: "https://vin-ui.vercel.app/",
