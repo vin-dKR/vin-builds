@@ -24,6 +24,8 @@ export const devProjects: Project[] = [
             { name: "Typescript", icon: "/tech/typescript.svg" },
             { name: "Node.js", icon: "/tech/nodejs.svg" },
             { name: "PostgreSQL", icon: "/tech/postgres.svg" },
+            { name: "Tanstack", icon: "/tech/tanstack.png" },
+            { name: "Zod", icon: "/tech/zod.svg" },
             { name: "Tailwind", icon: "/tech/tailwind.svg" }
         ]
     },
@@ -38,8 +40,12 @@ export const devProjects: Project[] = [
             { name: "Next.js", icon: "/tech/nextjs.svg" },
             { name: "Typescript", icon: "/tech/typescript.svg" },
             { name: "OpenAI", icon: "/tech/openai.svg" },
-            { name: "PostgreSQL", icon: "/tech/postgres.svg" },
-            { name: "Tailwind", icon: "/tech/tailwind.svg" }
+            { name: "MongoDB", icon: "/tech/mongo.svg" },
+            { name: "Tailwind", icon: "/tech/tailwind.svg" },
+            { name: "Clerk", icon: "tech/clerk.svg" },
+            { name: "Prisma", icon: "tech/prisma.svg" },
+            { name: "Motion", icon: "tech/motion.svg" },
+            { name: "Puppeteer", icon: "tech/puppeteer.svg" },
         ]
     },
     {
