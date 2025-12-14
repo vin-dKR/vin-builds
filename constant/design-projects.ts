@@ -16,6 +16,20 @@ type DesignProject = {
 
 export const designProjects: DesignProject[] = [
     {
+        title: "Vin Wallpaper",
+        description: "It is a AI bot posting beautiful wallpapers",
+        href: "https://x.com/vin_wallpapers",
+        previewImages: {
+            top: "/design/imgs/vin-ai.png",
+            bottom: "/design/imgs/vin-ai.png"
+        },
+        thumbnail: "/design/imgs/vin-ai.png",
+        designLink: "https://www.figma.com/design/EeNFj9sXShUGWHRSbpN6pM/vin-wallpaper?node-id=0-1&t=e1QGKfv7GAYH3KVb-1",
+        designTool: [
+            { name: "Figma", icon: "/design/figma.svg" }
+        ]
+    },
+    {
         title: "Eduents",
         description: "It's is platfrom to create Exams Effortlessly.",
         href: "https://eduents.com",
