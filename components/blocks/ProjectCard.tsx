@@ -3,11 +3,12 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, CheckCircle2, GitMerge, GitPullRequest } from "lucide-react"
 import { motion } from "framer-motion";
 import ArrowButton from "@/components/blocks/ArrowButton";
 import BubbleLogo from "./BubbleLogo"
 import PreviewContainer from "./PreviewContainer"
+import Image from "next/image"
 
 type ProjectCardProps = {
     title: string;
@@ -55,18 +56,6 @@ const ProjectCard = ({
         return (
             <div className="rounded-md bg-white/4 border border-white/5 p-2 shadow-md flex flex-col">
                 {thumbnail && <PreviewContainer images={thumbnail} />}
-                {/*
-                {previewImages && (
-                    <Image
-                        src="/design/imgs/salon2.png"
-                        alt="kjk`"
-                        className="cover"
-                        width={400}
-                        height={400}
-                    />
-                )
-                }
-                */}
                 <div className="px-3 mb-2">
                     <h3 className="text-sm md:text-xl font-medium mb-1 ">{title}</h3>
                     <p className="text-gray-400 text-xs md:text-sm mb-2">{description}</p>
@@ -119,6 +108,77 @@ const ProjectCard = ({
         return "bg-purple-950 text-purple-500 border-purple-800"
     }
 
+    // For opensource tab, render the GitHub-style UI
+    if (tab === "opensource") {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="group bg-white/4 p-4 rounded-md border border-white/5 backdrop-blur-lg hover:bg-white/5 transition-colors"
+            >
+                <Link
+                    href={pullRequestUrl || href || "#"}
+                    target="_blank"
+                    className="block"
+                >
+                    <div className="flex flex-col gap-2">
+                        {/* Repository and status row */}
+                        <div className="flex flex-col justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-md text-gray-400">
+                                        {title}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Badge
+                                    variant="outline"
+                                    className="text-[10px] px-2 py-0.5 rounded-md border-green-800 bg-green-950/30 text-green-400 flex items-center gap-1"
+                                >
+                                    <GitMerge className="w-3 h-3" />
+                                    Merged
+                                </Badge>
+                                <span className="text-xs text-gray-500">#{Math.floor(Math.random() * 9000) + 1000}</span>
+                            </div>
+                        </div>
+
+
+                        {/* Bottom row with branch and details */}
+                        <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1.5 bg-white/20 p-1 border border-white/10 rounded-md">
+                                    <Image
+                                        src="/companies/polar.png"
+                                        alt="alt image"
+                                        width={16}
+                                        height={16}
+                                        className="w-4 h-4 object-contain dark:invert"
+                                    />
+                                    <span className="text-xs text-gray-400">
+                                        polar.sh
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <GitPullRequest className="w-3 h-3 text-gray-500" />
+                                    <span className="text-xs text-gray-400">
+                                        {repository ? `${repository}#f5f1f59` : "#f5f1f59"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                                <span>View PR</span>
+                                <ArrowUpRight className="w-3 h-3" />
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            </motion.div>
+        )
+    }
+
+    // Original dev/web3 UI
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -127,7 +187,7 @@ const ProjectCard = ({
             className="group bg-white/4 p-2 rounded rounded-md border border-white/5 backdrop-blur-lg"
         >
             <Link
-                href={tab === "opensource" ? pullRequestUrl || href || "#" : href || "#"}
+                href={href || "#"}
                 target="_blank"
                 className="flex items-start justify-between group-hover:opacity-80 transition-opacity"
             >
@@ -135,11 +195,6 @@ const ProjectCard = ({
                     <div className="flex items-start gap-3 mb-1 justify-between">
                         <div className="flex flex-col">
                             <h2 className="text-sm md:text-xl font-medium">{title}</h2>
-                            {tab === "opensource" && (
-                                <p className="text-gray-400 text-[10px] md:text-xs mt-0.5 bg-purple-950 rounded-full px-4 pb-1 w-fit">
-                                    {repository}
-                                </p>
-                            )}
                         </div>
                         {status && (
                             <Badge
