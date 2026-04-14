@@ -11,7 +11,8 @@ type DesignProject = {
         name: string;
         icon: string;
     }[];
-    thumbnail?: string
+    thumbnail?: string;
+    details?: ProjectDetails;
 }
 
 export const designProjects: DesignProject[] = [

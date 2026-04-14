@@ -3,12 +3,13 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowUpRight, CheckCircle2, GitMerge, GitPullRequest } from "lucide-react"
+import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react"
 import { motion } from "framer-motion";
 import ArrowButton from "@/components/blocks/ArrowButton";
 import BubbleLogo from "./BubbleLogo"
 import PreviewContainer from "./PreviewContainer"
 import Image from "next/image"
+import { slugify } from "@/lib/projects"
 
 type ProjectCardProps = {
     title: string;
@@ -18,6 +19,7 @@ type ProjectCardProps = {
     statusColor?: "green" | "blue" | "orange" | "gray" | "amber";
     href?: string;
     stack?: string;
+    freelance?: boolean;
     technologies?: {
         name: string;
         icon: string;
@@ -34,6 +36,8 @@ type ProjectCardProps = {
         icon: string;
     }[];
     thumbnail?: string;
+    details?: ProjectDetails;
+    slug?: string;
 }
 
 const ProjectCard = ({
@@ -43,14 +47,17 @@ const ProjectCard = ({
     description,
     href,
     stack,
+    freelance,
     technologies = [],
     tab,
     thumbnail,
     designLink,
     designTool = [],
     pullRequestUrl,
-    repository
+    repository,
+    slug,
 }: ProjectCardProps) => {
+    const projectSlug = slug || slugify(title)
 
     if (tab === "design") {
         return (
@@ -77,11 +84,19 @@ const ProjectCard = ({
                             </div>
                         )}
 
-                        {designLink && (
-                            <ArrowButton href={designLink} className="font-bold text-xs py-2">
-                                Open Design
-                            </ArrowButton>
-                        )}
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href={`/${projectSlug}`}
+                                className="text-[10px] text-gray-400 hover:text-white border border-white/10 bg-white/5 hover:bg-white/10 rounded px-2 py-1 transition-colors"
+                            >
+                                details →
+                            </Link>
+                            {designLink && (
+                                <ArrowButton href={designLink} className="font-bold text-xs py-2">
+                                    Open Design
+                                </ArrowButton>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,7 +199,7 @@ const ProjectCard = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="group bg-white/4 p-2 rounded rounded-md border border-white/5 backdrop-blur-lg"
+            className="group relative bg-white/4 p-2 rounded rounded-md border border-white/5 backdrop-blur-lg"
         >
             <Link
                 href={href || "#"}
@@ -196,14 +211,24 @@ const ProjectCard = ({
                         <div className="flex flex-col">
                             <h2 className="text-sm md:text-xl font-medium">{title}</h2>
                         </div>
-                        {status && (
-                            <Badge
-                                variant="outline"
-                                className={`text-[8px] px-2 pb-0.5 rounded border ${getStatusClass()}`}
-                            >
-                                {status}
-                            </Badge>
-                        )}
+                        <div className="flex items-center gap-1">
+                            {freelance && (
+                                <Badge
+                                    variant="outline"
+                                    className="text-[8px] px-2 pb-0.5 rounded border bg-pink-950 text-pink-400 border-pink-800"
+                                >
+                                    Freelance
+                                </Badge>
+                            )}
+                            {status && (
+                                <Badge
+                                    variant="outline"
+                                    className={`text-[8px] px-2 pb-0.5 rounded border ${getStatusClass()}`}
+                                >
+                                    {status}
+                                </Badge>
+                            )}
+                        </div>
                     </div>
 
                     <p className="text-gray-400 text-xs md:text-sm mb-2">{description}</p>
@@ -243,6 +268,12 @@ const ProjectCard = ({
                 >
                     <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors ml-4" />
                 </motion.div>
+            </Link>
+            <Link
+                href={`/${projectSlug}`}
+                className="absolute bottom-1.5 right-1.5 text-[9px] text-gray-500 hover:text-white bg-black/40 border border-white/10 rounded px-1.5 py-0.5 transition-colors z-10"
+            >
+                details →
             </Link>
         </motion.div>
     )

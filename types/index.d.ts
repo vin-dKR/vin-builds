@@ -9,4 +9,13 @@ declare global {
         href: string
     }
 
+    interface ProjectDetails {
+        video?: string
+        longDescription?: string
+        features?: string[]
+        role?: string
+        duration?: string
+        coverImage?: string
+        gallery?: string[]
+    }
 }

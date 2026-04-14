@@ -9,6 +9,7 @@ type Project = {
         name: string;
         icon: string;
     }[];
+    details?: ProjectDetails;
 }
 
 export const web3Projects: Project[] = [
