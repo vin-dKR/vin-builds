@@ -17,5 +17,15 @@ declare global {
         duration?: string
         coverImage?: string
         gallery?: string[]
+        storyTitle?: string
+        storySections?: ProjectStorySection[]
+    }
+
+    interface ProjectStorySection {
+        heading: string
+        paragraphs?: string[]
+        bullets?: string[]
+        code?: { language?: string; content: string }
+        image?: { src: string; alt?: string; caption?: string }
     }
 }

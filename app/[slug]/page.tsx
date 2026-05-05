@@ -231,6 +231,59 @@ export default async function ProjectPage({
                         Visit project <ArrowUpRight className="w-4 h-4" />
                     </Link>
                 )}
+
+                {details?.storySections && details.storySections.length > 0 && (
+                    <section className="mt-16 pt-12 border-t border-white/10">
+                        <h2 className="text-xl md:text-2xl font-bold mb-6">
+                            {details.storyTitle || "More about this project"}
+                        </h2>
+                        <div className="space-y-10">
+                            {details.storySections.map((s, i) => (
+                                <div key={i}>
+                                    <h3 className="text-base md:text-lg font-semibold mb-3 text-white">
+                                        {s.heading}
+                                    </h3>
+                                    {s.paragraphs?.map((p, j) => (
+                                        <p
+                                            key={j}
+                                            className="text-gray-300 text-sm leading-relaxed mb-3 whitespace-pre-wrap"
+                                        >
+                                            {p}
+                                        </p>
+                                    ))}
+                                    {s.bullets && s.bullets.length > 0 && (
+                                        <ul className="list-disc list-inside text-gray-300 text-sm space-y-1.5 mb-3">
+                                            {s.bullets.map((b, k) => (
+                                                <li key={k}>{b}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {s.code && (
+                                        <pre className="bg-white/5 border border-white/10 rounded-md p-3 overflow-x-auto text-xs text-gray-200 mb-3">
+                                            <code>{s.code.content}</code>
+                                        </pre>
+                                    )}
+                                    {s.image && (
+                                        <figure className="mt-3 rounded-md overflow-hidden border border-white/10">
+                                            <Image
+                                                src={s.image.src}
+                                                alt={s.image.alt || s.heading}
+                                                width={1600}
+                                                height={900}
+                                                className="w-full h-auto"
+                                            />
+                                            {s.image.caption && (
+                                                <figcaption className="text-[11px] text-gray-500 px-3 py-2 italic">
+                                                    {s.image.caption}
+                                                </figcaption>
+                                            )}
+                                        </figure>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
         </main>
     )
