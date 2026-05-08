@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { RichText } from "@/components/blocks/RichText"
 import { CodeBlock } from "@/components/blocks/CodeBlock"
 import { StoryToc } from "@/components/blocks/StoryToc"
+import { ScrollWheelToc } from "@/components/blocks/ScrollWheelToc"
 import { ContactCta } from "@/components/blocks/ContactCta"
 
 export function generateStaticParams() {
@@ -267,14 +268,16 @@ export default async function ProjectPage({
 
                             {details.storyTldr && details.storyTldr.length > 0 && (
                                 <aside className="mb-8 rounded-lg border-l-2 border-amber-500/60 bg-amber-500/[0.04] p-4">
-                                    <div className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold mb-2">
+                                    <div className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold mb-3">
                                         TL;DR
                                     </div>
-                                    <ul className="space-y-1.5 text-sm text-gray-200 leading-relaxed">
+                                    <ul className="space-y-2 text-[13.5px] text-gray-200 leading-relaxed">
                                         {details.storyTldr.map((t, i) => (
-                                            <li key={i} className="flex gap-2">
-                                                <span className="text-amber-500/80 mt-1.5 w-1 h-1 rounded-full bg-amber-500/80 shrink-0" />
-                                                <RichText>{t}</RichText>
+                                            <li key={i} className="relative pl-4">
+                                                <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-amber-500/80" />
+                                                <span className="block">
+                                                    <RichText>{t}</RichText>
+                                                </span>
                                             </li>
                                         ))}
                                     </ul>
@@ -282,6 +285,7 @@ export default async function ProjectPage({
                             )}
 
                             <StoryToc items={tocItems} />
+                            <ScrollWheelToc items={tocItems} />
 
                             <div className="space-y-12">
                                 {sections.map((s, i) => (

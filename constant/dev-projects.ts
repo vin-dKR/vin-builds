@@ -52,95 +52,273 @@ export const devProjects: Project[] = [
         ],
         details: {
             duration: "Feb 26 – May 26",
-            storyTitle: "How Pagz was built",
+            storyTitle: "Building Pagz - A Print-on-Demand Store on Hostinger MariaDB, Next.js 16, and Razorpay",
+            storyReadTime: "10 min read",
+            storyTldr: [
+                "Built a **3-app print-on-demand stack** solo - api (Express + Bun), web (Next.js 16), admin (Next.js 16) - all on **one Hostinger plan**.",
+                "**Razorpay live swap** mid-flight from PhonePe with idempotent two-phase order creation - no double-charges, no orphan orders.",
+                "__Half-page math__ that survives client tampering - server re-derives `effectivePageCount` every pricing checkpoint.",
+                "**Guest cart** survives login redirect - base64 / blob / metadata fallbacks, ~~`QuotaExceededError`~~-resilient.",
+                "Closed the ~~Hostinger trailing-slash redirect loop~~ with one line. Hours of pain, documented forever.",
+            ],
             storySections: [
                 {
                     heading: "What Pagz is",
+                    tldr: "Print-on-demand store - customer uploads PDF, configures, pays via Razorpay, gets booklets shipped.",
                     paragraphs: [
-                        "Pagz is a print-on-demand store. A customer picks a category like 'Booklet Print', uploads a PDF, picks paper size, color mode, sides, copies, addons (binding, lamination), sees a live price built from a category-specific rule engine, pays with Razorpay, and gets the printed booklets shipped.",
-                        "I built the whole thing solo for a freelance client - three apps, around 300 commits, four months, deployed on Hostinger plus Vercel.",
+                        "Pagz is a print-on-demand store. A customer picks a category - say **Booklet Print**, uploads a PDF, picks paper size, color mode, sides (one or two), copies, addons (binding, lamination), sees a live price built from a category-specific rule engine, pays with Razorpay, and gets the printed booklets shipped.",
+                        "I built the whole thing. __Three Node.js apps, ~300 commits, four months, all deployed on Hostinger__. No Vercel, no AWS - the entire stack lives on one Hostinger plan because that is what the client already had.",
                     ],
                 },
                 {
-                    heading: "Three apps, no monorepo",
+                    heading: "What I built (all of it)",
+                    tldr: "Three Node.js processes on one Hostinger plan. Honest split below.",
+                    paragraphs: [
+                        "Three apps, three roles:",
+                    ],
                     bullets: [
-                        "api - Express on Bun (dev) / Node (prod), Prisma against MariaDB, Razorpay + FTP integrations.",
-                        "web - Next.js 16, React 19, Tailwind 4, TanStack Query (customer storefront).",
-                        "admin - Next.js 16 with @dnd-kit, hand-coded charts, Zod-validated forms (operations panel).",
-                        "Trade-off: types duplicated between web and admin. Win: one-zip-per-app deploys to Hostinger, no surprise build-graph coupling.",
+                        "**api** - Express, Bun (dev) / Node (prod), Prisma + MariaDB adapter. Routes, payments, FTP, PDF invoices.",
+                        "**web** - Next.js 16, React 19, Tailwind 4, TanStack Query. Customer storefront.",
+                        "**admin** - Next.js 16, React 19, Tailwind 4, dnd-kit, Zod. Operations panel.",
+                        "Trade-off: types duplicated between web and admin. Win: ~~one-zip-per-app deploys to Hostinger~~, no surprise build-graph coupling.",
+                    ],
+                },
+                {
+                    heading: "Why three apps, not a Turborepo monorepo",
+                    tldr: "__Shared hosting, not VPS__ - no Docker, no PM2 across services. The deploy story was 'what fits in the box'.",
+                    paragraphs: [
+                        "I wanted a Turborepo monorepo at the start. Shared types between web and admin, one CI run, one cache, one place to bump dependencies. Clean.",
+                        "Then I learned the constraint - __the client had a Hostinger shared hosting plan, not a VPS__. Shared hosting means no Docker, no PM2 across services, no monorepo build pipeline. You upload zips. You point subdomains at folders. The deploy story is **what can you fit inside that box**.",
+                        "So the architecture changed to fit the deploy:",
+                    ],
+                    bullets: [
+                        "**Three independent Node.js apps**, each as its own zip, each as its own Hostinger Node app.",
+                        "**Each app has its own `package.json` and `node_modules`** because shared hosting cannot symlink across apps.",
+                        "**Types duplicated between web and admin** because there is no shared build step. Copy-paste when they change. Annoying. Cheap.",
+                        "Could I have added CI/CD via GitHub Actions + FTP? Yes. Skipped because ~~the client was running tight on budget~~. Manual deploys with a documented checklist won that round.",
+                        "Principle for every choice: __what fits inside Hostinger, with the budget the client has__.",
+                    ],
+                },
+                {
+                    heading: "Why FTP, not S3",
+                    tldr: "Hostinger plan already includes file storage. **No S3 bill, no S3 outage, no S3 to debug**.",
+                    paragraphs: [
+                        "The customer-uploaded files (PDFs, images) had to live somewhere. Default reach for AWS S3. I did not.",
+                        "Reasons:",
+                    ],
+                    bullets: [
+                        "**Hostinger plan already includes file storage.** Adding S3 means another bill, another set of credentials, another vendor.",
+                        "**FTP from API server to Hostinger's own filesystem is faster than S3** from a free-tier region - same data center, no far-region TLS handshake.",
+                        "**Reading the file back is just `https://pagz.in/<path>`** - no presigned URLs, no CORS dance, no expiry to manage.",
+                        "Flow: multer (memory) -> API writes to `api/uploads/ftp-temp/` -> `basic-ftp` streams to `public_html/` -> local temp deleted -> public URL returned.",
+                        "Edge cases (PWD state, filename sanitization, retry on disconnect) took two evenings to harden. After that - quiet.",
+                        "Old DB rows still reference S3 keys from a brief earlier experiment. Resolver handles both. __Backward-compat costs almost nothing once the helper is in place__.",
                     ],
                 },
                 {
                     heading: "Hostinger gives MariaDB, not Postgres",
+                    tldr: "Use the **dedicated `@prisma/adapter-mariadb`** with `connectionLimit: 5`. Shared hosting connection cap is real.",
                     paragraphs: [
-                        "Most Prisma tutorials assume Postgres. The default MySQL connector works against MariaDB but has small quirks, and shared hosting has a tight connection limit. Fix - use the dedicated MariaDB adapter with discrete env vars (DATABASE_HOST, DATABASE_USER, etc.) and a connection pool capped at 5.",
+                        "Most Prisma tutorials assume Postgres. The default MySQL connector works against MariaDB but has small quirks, and shared hosting has a tight connection limit. Fix - __use the dedicated MariaDB adapter__.",
                     ],
                     code: {
                         language: "ts",
                         content:
-                            "import { PrismaMariaDb } from '@prisma/adapter-mariadb'\n\nconst adapter = new PrismaMariaDb({\n  host, user, password, database,\n  connectionLimit: 5,\n})\nconst prisma = new PrismaClient({ adapter })",
+                            "// api/src/services/prisma.ts\nimport { PrismaMariaDb } from '@prisma/adapter-mariadb'\n\nconst adapter = new PrismaMariaDb({\n  host, user, password, database,\n  connectionLimit: 5,\n})\nconst prisma = new PrismaClient({ adapter })",
                     },
                 },
                 {
                     heading: "A pricing engine where rules are also products",
+                    tldr: "Services and SKUs flow through the **same Cart/Order/Wishlist tables**. Rules can change; ~~old invoices cannot~~.",
                     paragraphs: [
-                        "The catalog has two kinds of things - services (print jobs) and products (SKUs on a shelf). I wanted both to flow through the same Cart, Order, and Wishlist tables.",
-                        "A CategoryPricingRule carries a base-price config. When the admin publishes a rule, the system creates a real Product row from it and tags it generatedFromPricingRule = true. Cart and order key on productId. Service jobs and physical SKUs use the same code path. When the rule changes, a resync rewrites the Product. Old orders stay correct because every OrderItem.metadata carries a snapshot of the price breakdown taken at order time.",
+                        "The catalog has two kinds of things - **services** (print jobs, configurable) and **products** (SKUs on a shelf). I wanted both to flow through the same Cart, Order, and Wishlist tables. So I made them the same shape.",
+                        "A `CategoryPricingRule` carries a `BASE_PRICE` config. When an admin **publishes** a rule, the system creates a real `Product` row from it - same image, same spec structure - and tags it `generatedFromPricingRule = true`. Cart, order, wishlist all key on `productId`. __Service jobs and physical SKUs use exactly the same code path__.",
+                        "When the rule changes, a resync rewrites the `Product`. Old orders stay correct because every `OrderItem.metadata` carries a snapshot of the price breakdown taken at order time. Rules can change; ~~old invoices cannot~~.",
                     ],
                 },
                 {
                     heading: "Half-page math (and why I do not trust the client)",
+                    tldr: "Server **always** derives `effectivePageCount` from spec metadata. ~~Client cannot send the field~~. Off by ₹0.20 = customer email.",
                     paragraphs: [
-                        "Picking 'Both Sides' duplex-prints a 200-page PDF onto 100 sheets. That changes base price, page-controller cap, and addon ranges. Each in different ways.",
-                        "Two pieces - first, an isHalfPage flag lives on the spec option, not the category. Second, the server always derives effectivePageCount from spec metadata at every pricing checkpoint. There was a brief window where the client sent the field and the server trusted it. That ended the moment someone realized you could halve your invoice by sending the wrong number.",
-                        "After more iterations - addon range gates use raw pages × copies (the physical book), not the half-page-reduced count (the press output). A binding addon for 'books up to 200 pages' is about the book the customer holds.",
+                        "Picking **Both Sides** duplex-prints a 200-page PDF onto 100 sheets. That changes the base price (paper is per sheet, not per page), the page-controller cap, and the binding addon range. Each in different ways.",
+                        "Two pieces:",
+                    ],
+                    bullets: [
+                        "**A flag on the spec option.** `CategorySpecificationOption.metadata.isHalfPage` lives on the option, not the category. So 'Sides = Both Sides' carries the flag; 'Sides = Single' does not.",
+                        "**Server always derives `effectivePageCount`.** There was a brief day where the client sent it and the server trusted it. ~~That ended the moment someone realized you could halve your invoice by sending the wrong number~~. Fix - server re-derives from spec metadata at every pricing checkpoint. Client cannot send the field.",
+                    ],
+                },
+                {
+                    heading: "Half-page math - the addon-range twist",
+                    tldr: "Ranges gate on **raw `pageCount × copies`**, not the half-page-reduced count. About the book the customer holds.",
+                    paragraphs: [
+                        "Second hard part - **which page count does the addon range gate on?** After a few iterations - ranges gate on raw `pageCount × copies`, not the half-page-reduced count. Why? Because a binding addon for 'books up to 200 pages' is about __the book the customer holds__, not how the press lays out paper.",
+                        "A `copyMultiplier` flag covers per-copy-pages addons - binding is one binding per copy, regardless of page count. Three flags (`quantityMultiplier`, `fileMultiplier`, `copyMultiplier`), eight permutations, one helper, persisted price breakdown.",
+                        "__Get it wrong by ₹0.20 on a ₹500 invoice and a customer will email you__. Get it right and they never notice.",
                     ],
                 },
                 {
                     heading: "The guest cart that survives login",
+                    tldr: "**Base64 -> blob URL -> metadata-only** fallback chain. ~~`QuotaExceededError`~~ doesn't lose work. Re-uploads on login.",
                     paragraphs: [
-                        "Customers configure a 200-page color-printed booklet with addons, then have to log in. sessionStorage has a quota of about 5-10 MB, and a single base64-encoded PDF can blow it.",
-                        "Strategy - small files become base64 in sessionStorage, larger files become blob URLs, already-uploaded files keep just the S3 key. On QuotaExceededError, retry without file payloads - keep only metadata. Better to ask the user to re-pick a file than lose the whole configuration.",
-                        "Post-login recovery converts base64 back into File objects, re-uploads, validates addon IDs against live rules (silently drops stale ones), reconstructs metadata, re-issues add-to-cart. Around 850 LOC across two utilities.",
+                        "Real flow: browses anonymously, configures a 200-page color-printed booklet with four addons, hits Add to Cart, then Checkout. Now they have to log in. __Do not lose anything__.",
+                        "Two hard parts - **`sessionStorage` has a quota** (~5-10 MB per origin) and **files only live as in-memory `File` objects** that die on the login redirect remount.",
+                        "Strategy in `web/lib/utils/pending-purchase.ts`:",
+                    ],
+                    bullets: [
+                        "Files **under 5 MB and total under 10 MB** -> base64 data URI in sessionStorage.",
+                        "**Larger files** -> blob URL (free, ephemeral).",
+                        "**Files already uploaded to FTP** -> keep just the file path.",
+                        "On `QuotaExceededError` -> retry without file payloads. Keep only metadata - names, sizes, specs, addon IDs, template form. ~~Better to ask the user to re-pick a file than lose the whole configuration~~.",
+                        "**24-hour TTL.** Auto-cleared on stale read.",
+                        "Post-login recovery in `pending-cart-intent.ts`: read pending data -> convert base64/blob URLs back to `File` -> re-upload to FTP -> validate every addon ID against live rules (silently drop stale) -> reconstruct metadata -> re-issue add-to-cart.",
+                        "Cost: ~850 LOC across two utilities, plus a test plan I walk every time I touch them.",
                     ],
                 },
                 {
                     heading: "The Hostinger trailing-slash redirect loop",
+                    tldr: "**One line:** `trailingSlash: true`. Hostinger proxy adds slash, Next default doesn't. Loop.",
                     paragraphs: [
-                        "Account pages would intermittently fail to load. The browser network tab showed /orders being 308'd to /orders/, then RSC payloads being re-fetched, then redirected again. Looked like a Next bug.",
-                        "Cause - Hostinger's reverse proxy adds a trailing-slash redirect. Next.js's default canonical URL is no trailing slash. Each side thinks the other is wrong. Loop.",
-                        "Fix - one line in next.config.js: trailingSlash: true. Hours of debugging. Documented in CLAUDE.md as 'do not flip' so the next dev does not undo it.",
+                        "Symptom: account pages would not load. Network tab showed `/orders` getting 308'd to `/orders/`, then RSC payloads getting re-fetched, then redirected again. Inconsistent. Looked like a Next bug at first.",
+                        "Cause: __Hostinger's reverse proxy adds a trailing-slash redirect__. Next.js's default canonical URL is **no** trailing slash. Each side thought the other was wrong. Loop.",
+                        "Fix:",
                     ],
+                    code: {
+                        language: "js",
+                        content:
+                            "// web/next.config.js\nconst nextConfig = {\n  trailingSlash: true,\n}",
+                    },
                 },
                 {
-                    heading: "Switching the payment gateway live",
+                    heading: "Switching from PhonePe to Razorpay live",
+                    tldr: "**Two-phase order creation** with `PendingPayment` row. Success-handler vs webhook race -> idempotent. ~~Both gateways behind same `Payment` model~~ - old orders stay readable.",
                     paragraphs: [
-                        "The first version of Pagz used a different gateway. After a month of running it, I migrated the live system to Razorpay.",
-                        "The interesting part is the race - the success-handler call (when the customer lands back on the callback page) and the S2S webhook can both arrive first, and both want to create the order.",
-                        "Fix - two-phase order creation. At initiate, serialize the cart into a PendingPayment row with a 1-hour TTL. At success (whichever path lands first), flip status to USED in the same transaction that creates Order + OrderItem + Payment. The other path arrives, finds status = USED, returns 200 idempotently.",
+                        "The first version used **PhonePe**. Worked but friction-heavy - signed base64 payloads, S2S-only webhook verification, slower refund APIs. After ~a month live, we migrated to __Razorpay__.",
+                        "Razorpay Standard Checkout flow:",
+                    ],
+                    bullets: [
+                        "Backend creates a Razorpay order via `POST /v1/orders` (HTTP basic auth `key_id` + `key_secret`). Get back `order_id`.",
+                        "Frontend opens Razorpay Checkout with that `order_id`, amount, customer details.",
+                        "Customer pays.",
+                        "Razorpay calls success handler with `razorpay_order_id`, `razorpay_payment_id`, `razorpay_signature`.",
+                        "Backend verifies: `HMAC-SHA256(razorpay_order_id + '|' + razorpay_payment_id, key_secret)` must equal `razorpay_signature`.",
+                        "Razorpay also fires an S2S webhook with `X-Razorpay-Signature` so the backend can confirm payment even if the customer's browser closes mid-redirect.",
                     ],
                 },
                 {
-                    heading: "Bugs that ate days",
+                    heading: "Razorpay - the race and the fix",
+                    tldr: "Two-phase create + idempotent flip-to-`USED` lock. Whichever path arrives first wins; the other returns 200.",
+                    paragraphs: [
+                        "~~The interesting part is the race~~ - the success-handler call and the webhook can both land first. Both want to create the order.",
+                        "My fix - **two-phase order creation**:",
+                    ],
                     bullets: [
-                        "Trailing-slash redirect loop on Hostinger - one-line fix, hours of diagnosis.",
-                        "Client-spoofed effectivePageCount - server now derives from spec metadata.",
-                        "Addon range gating on the wrong page count - decided ranges gate on the physical book.",
-                        "Razorpay success-handler vs webhook race - two-phase order creation with PendingPayment lock.",
-                        "Chunk-load errors after deploys - aggressive splitChunks plus a layout-level error handler with 'Reload' CTA.",
-                        "Invoice math drifting after rule edits - persist breakdown at order time, never recompute on render.",
+                        "**At initiate**, serialize the cart into a `PendingPayment` row with a 1-hour TTL.",
+                        "**At success** (whichever path lands first), flip `PendingPayment.status` to `USED` in the same transaction that creates `Order + OrderItem + Payment`. The other path arrives, finds `status = USED`, returns 200 idempotently.",
+                        "Payment instrument unpacked into typed JSON: UPI vpa, CARD network + last4 + issuer, NETBANKING bank, WALLET type. Receipt shows 'Paid via UPI: 99xxxxx@ybl' instead of just 'ONLINE'.",
+                        "__Both gateways behind the same `Payment` model and a `RefundGateway` enum__ - no renaming columns, no backfill, old PhonePe orders stay readable forever.",
                     ],
                 },
                 {
-                    heading: "What I want a hiring manager to take from this",
+                    heading: "Production chunk loading does not white-screen any more",
+                    tldr: "**splitChunks** + layout-level `ChunkErrorHandler` + __flush Hostinger cache before AND after every deploy__. Step zero, step last.",
+                    paragraphs: [
+                        "Long-lived tabs hold references to chunk hashes. You deploy, chunks change, the user clicks something that lazy-imports a component, browser tries to fetch a chunk that no longer exists. **White screen.**",
+                        "Three-part fix:",
+                    ],
+                    code: {
+                        language: "js",
+                        content:
+                            "// next.config.js\nwebpack: (config, { dev }) => {\n  if (!dev) {\n    config.optimization.splitChunks = {\n      chunks: 'all',\n      cacheGroups: {\n        vendor: { test: /node_modules/, priority: 20 },\n        common: { minChunks: 2, priority: 10 },\n      },\n    }\n  }\n  return config\n}",
+                    },
+                },
+                {
+                    heading: "Chunk loading - parts 2 and 3",
+                    tldr: "ChunkErrorHandler shows 'Reload to update' instead of white screen. Hostinger cache flush is part of the deploy checklist.",
                     bullets: [
-                        "I can own a full e-commerce stack solo - schema, API, payments, FTP, PDF invoices, two Next.js apps, deploys, on-call.",
-                        "I work directly with non-technical clients. Translating 'I want my customers to upload a PDF and pick binding' into a spec engine, a pricing rule, and a half-page math fix is the job.",
-                        "I make trade-offs out loud. Three apps over a monorepo. MariaDB adapter over default. Persisted breakdown over recomputed.",
-                        "I close bugs at the root. The half-page spoof, the redirect loop, the chunk errors - each ended with either code or CI that prevents the bug from coming back.",
+                        "**`ChunkErrorHandler` at the layout level** listens for `error` events on dynamic imports and surfaces a 'Reload to update' CTA instead of a white screen.",
+                        "__Always clear the Hostinger cache before AND after every deploy.__ Hostinger's edge will happily serve a stale `index.html` pointing at chunks that no longer exist - which causes the exact white-screen the first two fixes prevent. Manual flush is part of the deploy checklist now.",
+                        "Plus `onDemandEntries` tuning (`maxInactiveAge: 25_000`, `pagesBufferLength: 2`). Production chunk errors mostly went away. The ones that remain are recoverable.",
+                    ],
+                },
+                {
+                    heading: "Per-category minimum cart, but actionable",
+                    tldr: "Structured `CartMinimumError` with `details.shortfalls`. ~~Generic 'cart minimum not met' is useless~~ - the customer needs to know which category, by how much.",
+                    paragraphs: [
+                        "Multiple categories means multiple minimums. A generic 'your cart does not meet the minimum' is useless when you are holding ₹400 of A and ₹100 of B and both want ₹500.",
+                        "Made the error structured. A custom `CartMinimumError extends ValidationError` carries a `details` payload:",
+                    ],
+                    code: {
+                        language: "json",
+                        content:
+                            "{\n  \"shortfalls\": [\n    { \"categoryId\": \"...\", \"categoryName\": \"Prints\", \"required\": 500, \"current\": 400 },\n    { \"categoryId\": \"...\", \"categoryName\": \"Booklets\", \"required\": 500, \"current\": 100 }\n  ]\n}",
+                    },
+                },
+                {
+                    heading: "Phone-OTP-only signup",
+                    tldr: "Migrated to **phone-OTP-first** because __that is what Indian customers actually use__. Destructive migration, cascade deletes everywhere.",
+                    paragraphs: [
+                        "Most starter auth code assumes email + password. I switched to phone-OTP-first because __that is what Indian customers actually use__.",
+                        "The migration was destructive:",
+                    ],
+                    bullets: [
+                        "Drop users without phone numbers.",
+                        "Make `phone` mandatory and unique.",
+                        "Drop the old `password_reset_otps` table.",
+                        "Create new `phone_otps` table with `OTPPurpose` enum (`SIGNUP`, `RESET_PASSWORD`).",
+                        "Add cascade deletes everywhere a user owns data (addresses, orders, payments, coupons, reviews, cart) so phone-conflict cleanup does not leave orphans.",
+                        "OTP table scoped per `(phone, purpose)` - SIGNUP and RESET_PASSWORD OTPs for the same phone do not collide.",
+                        "Customer auth tries Supabase first (optional fallback), then local JWT. Single `User` table; `isAdmin`/`isSuperAdmin` flags decide permissions.",
+                    ],
+                },
+                {
+                    heading: "Invoices that do not drift",
+                    tldr: "**Persist breakdown at order time, never recompute on render.** ~~Floating-point + page math + addons + percentage coupons~~ = silent drift. Lock it forever.",
+                    paragraphs: [
+                        "Subtle bug class - your invoice shows ₹500.20 but the order total says ₹500.00. ~~Floating-point math + page counts × per-page rates + addons + percentage coupons makes silent drift easy~~.",
+                        "Fix: **persist the breakdown at order time, never recompute on render.** `OrderItem.metadata.priceBreakdown` is a JSON array of every line, stored at add-to-cart, locked forever. The PDF renders the persisted rows. The sum is the persisted total. __No drift, ever__.",
+                        "The PDFKit invoice strips annotation-only rows (like 'Both Sides: 100 -> 50') via an `isInfoRow` flag so they do not show as ₹0.00 lines. Logo loads from a multi-candidate path search with caching, falls back to a wordmark if missing - so invoice generation never dies because of a path mismatch between dev and prod.",
+                    ],
+                },
+                {
+                    heading: "Bugs that ate days, and how I closed them",
+                    tldr: "Each ended with **either code or a deploy-checklist step** so it cannot quietly come back.",
+                    bullets: [
+                        "**Trailing-slash redirect loop on Hostinger.** One-line `trailingSlash: true`, hours of diagnosis.",
+                        "**Stale Hostinger edge cache after deploy.** Always flush before AND after every upload. Now part of the checklist.",
+                        "**Client-spoofed `effectivePageCount`.** Server now derives from spec metadata. ~~Client cannot send the field~~.",
+                        "**Addon range gating on the wrong page count.** Decided ranges gate on the physical book (raw pages × copies), not the press layout.",
+                        "**Razorpay success-handler vs webhook race.** Two-phase order creation with `PendingPayment` row, idempotent success path.",
+                        "**Chunk-load errors after deploys.** Aggressive splitChunks + layout-level error handler with 'Reload to update' CTA + Hostinger cache flush.",
+                        "**Invoice math drifting after rule edits.** Persist breakdown at order time, never recompute on render.",
+                    ],
+                },
+                {
+                    heading: "How this came together",
+                    tldr: "If you are skimming - **this is what I want you to remember**.",
+                    paragraphs: [
+                        "Pagz was a freelance project. The client owned a print shop, wanted to move off WhatsApp orders and manual ledgers. They needed a real online store - configurable print jobs, online payments, a clean admin panel, and a workflow that pushed customer files straight to the printer. They handed me the brief and the budget. I built it.",
+                        "**Four months, around 300 commits, three Node.js apps in production on Hostinger.** From empty repo to live storefront, payment gateway swapped from PhonePe to Razorpay mid-flight, every screen tested with the actual shop owner, every bug closed at the root.",
+                        "If you are hiring, what I want you to take from this:",
+                    ],
+                    bullets: [
+                        "__I can own a full e-commerce stack solo__ - schema, API, payments, FTP file storage, PDF invoices, two Next.js apps, deploys, on-call.",
+                        "I work directly with non-technical clients. Translating 'I want my customers to upload a PDF and pick binding' into a spec engine, a pricing rule, and a half-page math fix **is the job**.",
+                        "I make trade-offs out loud. Three apps over Turborepo (shared hosting). FTP over S3 (budget). Manual deploys over CI/CD (budget). **Each decision has a stated cost and a stated reason.**",
+                        "I close bugs at the root. The half-page spoof, the redirect loop, the chunk errors - each ended with code or a deploy step that prevents the bug from coming back.",
+                        "**I ship.** Four months, in production, taking real orders.",
                     ],
                 },
             ],
+            contactCta: {
+                title: "Want to work together?",
+                message:
+                    "Open to full-time roles and freelance projects. If you are building something hard - e-commerce, payments, complex schemas, anything where the boring layers eat your week - drop a message.",
+                email: "vinodkumarmurmu62@gmail.com",
+                github: "https://github.com/vin-dKR",
+                linkedin: "https://linkedin.com/in/vinodkrs",
+                twitter: "https://twitter.com/always_VinodKr",
+            },
         }
     },
     {
