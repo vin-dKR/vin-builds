@@ -42,19 +42,19 @@ export function ContactCta({ cta }: { cta: ProjectContactCta }) {
                     {cta.message}
                 </p>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                 {links.map((l) => (
                     <Link
                         key={l.key}
                         href={l.href}
                         target={l.key === "email" ? undefined : "_blank"}
-                        className="group flex items-center justify-between gap-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2.5 transition-colors"
+                        className="group flex items-center justify-between gap-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2.5 transition-colors min-w-0"
                     >
-                        <span className="flex items-center gap-2 text-sm text-gray-200">
-                            <span className="text-gray-400">{l.icon}</span>
-                            {l.label}
+                        <span className="flex items-center gap-2 text-sm text-gray-200 min-w-0">
+                            <span className="text-gray-400 shrink-0">{l.icon}</span>
+                            <span className="truncate">{l.label}</span>
                         </span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-gray-500 group-hover:text-white transition-colors" />
+                        <ArrowUpRight className="w-3.5 h-3.5 text-gray-500 group-hover:text-white transition-colors shrink-0" />
                     </Link>
                 ))}
             </div>

@@ -9,6 +9,7 @@ import { CodeBlock } from "@/components/blocks/CodeBlock"
 import { StoryToc } from "@/components/blocks/StoryToc"
 import { ScrollWheelToc } from "@/components/blocks/ScrollWheelToc"
 import { ContactCta } from "@/components/blocks/ContactCta"
+import { StoryHighlights } from "@/components/blocks/StoryHighlights"
 
 export function generateStaticParams() {
     return getAllProjects().map((p) => ({ slug: p.slug }))
@@ -267,21 +268,7 @@ export default async function ProjectPage({
                             </header>
 
                             {details.storyTldr && details.storyTldr.length > 0 && (
-                                <aside className="mb-8 rounded-lg border-l-2 border-amber-500/60 bg-amber-500/[0.04] p-4">
-                                    <div className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold mb-3">
-                                        TL;DR
-                                    </div>
-                                    <ul className="space-y-2 text-[13.5px] text-gray-200 leading-relaxed">
-                                        {details.storyTldr.map((t, i) => (
-                                            <li key={i} className="relative pl-4">
-                                                <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-amber-500/80" />
-                                                <span className="block">
-                                                    <RichText>{t}</RichText>
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </aside>
+                                <StoryHighlights items={details.storyTldr} />
                             )}
 
                             <StoryToc items={tocItems} />
