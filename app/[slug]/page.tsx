@@ -1,9 +1,13 @@
-import { getAllProjects, getProjectBySlug } from "@/lib/projects"
+import { getAllProjects, getProjectBySlug, slugify } from "@/lib/projects"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, ArrowUpRight } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, Sparkles, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { RichText } from "@/components/blocks/RichText"
+import { CodeBlock } from "@/components/blocks/CodeBlock"
+import { StoryToc } from "@/components/blocks/StoryToc"
+import { ContactCta } from "@/components/blocks/ContactCta"
 
 export function generateStaticParams() {
     return getAllProjects().map((p) => ({ slug: p.slug }))
@@ -232,58 +236,153 @@ export default async function ProjectPage({
                     </Link>
                 )}
 
-                {details?.storySections && details.storySections.length > 0 && (
-                    <section className="mt-16 pt-12 border-t border-white/10">
-                        <h2 className="text-xl md:text-2xl font-bold mb-6">
-                            {details.storyTitle || "More about this project"}
-                        </h2>
-                        <div className="space-y-10">
-                            {details.storySections.map((s, i) => (
-                                <div key={i}>
-                                    <h3 className="text-base md:text-lg font-semibold mb-3 text-white">
-                                        {s.heading}
-                                    </h3>
-                                    {s.paragraphs?.map((p, j) => (
-                                        <p
-                                            key={j}
-                                            className="text-gray-300 text-sm leading-relaxed mb-3 whitespace-pre-wrap"
-                                        >
-                                            {p}
-                                        </p>
-                                    ))}
-                                    {s.bullets && s.bullets.length > 0 && (
-                                        <ul className="list-disc list-inside text-gray-300 text-sm space-y-1.5 mb-3">
-                                            {s.bullets.map((b, k) => (
-                                                <li key={k}>{b}</li>
-                                            ))}
-                                        </ul>
+                {details?.storySections && details.storySections.length > 0 && (() => {
+                    const sections = details.storySections.map((s) => ({
+                        ...s,
+                        id: s.id || slugify(s.heading),
+                    }))
+                    const tocItems = sections.map((s) => ({
+                        id: s.id!,
+                        heading: s.heading,
+                    }))
+                    return (
+                        <section className="mt-16 pt-12 border-t border-white/10">
+                            <header className="mb-6">
+                                <h2 className="text-xl md:text-2xl font-bold mb-3">
+                                    {details.storyTitle || "More about this project"}
+                                </h2>
+                                <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
+                                    {details.storyReadTime && (
+                                        <span className="inline-flex items-center gap-1">
+                                            <Clock className="w-3 h-3" />
+                                            {details.storyReadTime}
+                                        </span>
                                     )}
-                                    {s.code && (
-                                        <pre className="bg-white/5 border border-white/10 rounded-md p-3 overflow-x-auto text-xs text-gray-200 mb-3">
-                                            <code>{s.code.content}</code>
-                                        </pre>
-                                    )}
-                                    {s.image && (
-                                        <figure className="mt-3 rounded-md overflow-hidden border border-white/10">
-                                            <Image
-                                                src={s.image.src}
-                                                alt={s.image.alt || s.heading}
-                                                width={1600}
-                                                height={900}
-                                                className="w-full h-auto"
-                                            />
-                                            {s.image.caption && (
-                                                <figcaption className="text-[11px] text-gray-500 px-3 py-2 italic">
-                                                    {s.image.caption}
-                                                </figcaption>
-                                            )}
-                                        </figure>
-                                    )}
+                                    <span className="inline-flex items-center gap-1">
+                                        <Sparkles className="w-3 h-3" />
+                                        {sections.length} sections
+                                    </span>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                            </header>
+
+                            {details.storyTldr && details.storyTldr.length > 0 && (
+                                <aside className="mb-8 rounded-lg border-l-2 border-amber-500/60 bg-amber-500/[0.04] p-4">
+                                    <div className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold mb-2">
+                                        TL;DR
+                                    </div>
+                                    <ul className="space-y-1.5 text-sm text-gray-200 leading-relaxed">
+                                        {details.storyTldr.map((t, i) => (
+                                            <li key={i} className="flex gap-2">
+                                                <span className="text-amber-500/80 mt-1.5 w-1 h-1 rounded-full bg-amber-500/80 shrink-0" />
+                                                <RichText>{t}</RichText>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </aside>
+                            )}
+
+                            <StoryToc items={tocItems} />
+
+                            <div className="space-y-12">
+                                {sections.map((s, i) => (
+                                    <article
+                                        key={i}
+                                        id={s.id}
+                                        className="scroll-mt-24"
+                                    >
+                                        <div className="flex items-baseline gap-3 mb-3">
+                                            <span className="text-xs font-mono text-gray-500 tabular-nums">
+                                                {String(i + 1).padStart(2, "0")}
+                                            </span>
+                                            <h3 className="text-lg md:text-xl font-semibold text-white">
+                                                <a
+                                                    href={`#${s.id}`}
+                                                    className="hover:text-blue-300 transition-colors"
+                                                >
+                                                    {s.heading}
+                                                </a>
+                                            </h3>
+                                        </div>
+
+                                        {s.tldr && (
+                                            <div className="mb-3 rounded-md border-l-2 border-blue-500/50 bg-blue-500/[0.04] px-3 py-2 text-[13px] text-gray-200 italic">
+                                                <RichText>{s.tldr}</RichText>
+                                            </div>
+                                        )}
+
+                                        {s.paragraphs?.map((p, j) => (
+                                            <p
+                                                key={j}
+                                                className="text-gray-300 text-[14px] leading-relaxed mb-3"
+                                            >
+                                                <RichText>{p}</RichText>
+                                            </p>
+                                        ))}
+                                        {s.bullets && s.bullets.length > 0 && (
+                                            <ul className="text-gray-300 text-[14px] space-y-2 mb-3 pl-1">
+                                                {s.bullets.map((b, k) => (
+                                                    <li
+                                                        key={k}
+                                                        className="flex gap-2.5 leading-relaxed"
+                                                    >
+                                                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500/70 shrink-0" />
+                                                        <span>
+                                                            <RichText>{b}</RichText>
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        {s.code && (
+                                            <CodeBlock
+                                                language={s.code.language}
+                                                content={s.code.content}
+                                            />
+                                        )}
+                                        {s.video && (
+                                            <div className="mt-3 rounded-md overflow-hidden border border-white/10 bg-black aspect-video">
+                                                {isExternalVideo(s.video) ? (
+                                                    <iframe
+                                                        src={toEmbed(s.video)}
+                                                        className="w-full h-full"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                    />
+                                                ) : (
+                                                    <video
+                                                        src={s.video}
+                                                        controls
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                )}
+                                            </div>
+                                        )}
+                                        {s.image && (
+                                            <figure className="mt-3 rounded-md overflow-hidden border border-white/10">
+                                                <Image
+                                                    src={s.image.src}
+                                                    alt={s.image.alt || s.heading}
+                                                    width={1600}
+                                                    height={900}
+                                                    className="w-full h-auto"
+                                                />
+                                                {s.image.caption && (
+                                                    <figcaption className="text-[11px] text-gray-500 px-3 py-2 italic">
+                                                        {s.image.caption}
+                                                    </figcaption>
+                                                )}
+                                            </figure>
+                                        )}
+                                    </article>
+                                ))}
+                            </div>
+
+                            {details.contactCta && (
+                                <ContactCta cta={details.contactCta} />
+                            )}
+                        </section>
+                    )
+                })()}
             </div>
         </main>
     )

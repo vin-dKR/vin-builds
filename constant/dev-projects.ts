@@ -185,85 +185,207 @@ export const devProjects: Project[] = [
         details: {
             video: "https://amh7dc2otlwrtz2o.public.blob.vercel-storage.com/eduents",
             duration: "May 25 – Present",
-            storyTitle: "How Eduents was built",
+            storyTitle: "Shipping Eduents - How I Built the Next.js Core of a Five-Repo EdTech Platform",
+            storyReadTime: "8 min read",
+            storyTldr: [
+                "Owned the **Next.js 15 + Prisma + MongoDB** core of a 5-repo EdTech platform.",
+                "Built a **dumb-relay WebSocket** server for live folder collab - one write path, no race conditions.",
+                "Singleton **Puppeteer + Chromium** for PDF generation - cold start dropped from ~4s to ~600ms warm.",
+                "__Fractional positions__ for drag-and-drop reorder - no write storms, no flap on concurrent drags.",
+                "Vision-LLM pipeline that turns scanned PDFs into a searchable question bank - ~~EXIF rotation bug~~ ate the most days.",
+            ],
             storySections: [
                 {
-                    heading: "What Eduents does",
+                    heading: "What Eduents is",
+                    tldr: "Teacher tool - upload PDFs, build papers, run online or OMR exams, see results.",
                     paragraphs: [
                         "Eduents helps teachers do four things - upload question PDFs and turn them into a searchable question bank, build question papers and exams from that bank, run those exams online or grade paper OMR sheets, and see how the students did.",
-                        "I built the main Next.js app and the live-collaboration server. My teammate built the Python tools that read PDFs and detect images. We meet at a small set of API rules.",
+                        "I built the main app and the live-collaboration server. My teammate built the Python tools that read PDFs and detect images. __We meet at a small set of API rules.__",
+                        "The question bank holds questions pulled from textbooks and content books. From there, the teacher picks the ones they want, drops them into `Create Test`, and downloads the paper as a PDF - questions on one file, answers on another (when answers are available).",
                     ],
                 },
                 {
                     heading: "What I own vs what my teammate built",
+                    tldr: "Five repos. I own all the frontends + the main Next.js app + the WS server. Teammate owns the Python backends.",
+                    paragraphs: [
+                        "Honest split of the five repos:",
+                    ],
                     bullets: [
-                        "Me - the main Next.js 15 app (Prisma + MongoDB + Clerk + Puppeteer + OpenAI SDK).",
-                        "Me - the standalone WebSocket collaboration server (Node.js + ws).",
-                        "Me - the frontends of three satellite tools (Konva canvas, Vite + React extractor, Vite + React verifier).",
-                        "Teammate - the Python backends (FastAPI + Flask + OpenCV + vision LLM glue).",
+                        "**eduents** (main app) - Next.js 15, React 19, Prisma, MongoDB, Clerk, Puppeteer, OpenAI SDK - **Me**.",
+                        "**ws-questions-b** (live collab server) - Node.js, `ws` library - **Me**.",
+                        "**image-auto-cropper** (Konva canvas tool) - Next.js 16 + Konva - **Me** (frontend) / teammate (Python backend).",
+                        "**question-extractor-tool** (PDF -> JSON tool) - Vite + React 19 - **Me** (frontend) / teammate (Flask backend).",
+                        "**question-image-verifier** (image checker tool) - Vite + React 19 - **Me** (frontend) / teammate (FastAPI backend).",
+                        "This post is about the parts I built. I will mention the Python side only where my code talks to it.",
                     ],
                 },
                 {
-                    heading: "Database design - one schema, two areas",
+                    heading: "Why five small repos, not one big one",
+                    tldr: "Different runtimes, different deploy targets. One repo would slow everyone down.",
                     paragraphs: [
-                        "The Prisma schema covers the question bank and the exam system in one file. One unusual choice - a Student is not a User. A student who only takes one OMR exam should not have to sign up. So the exam side has its own Student model with no login link.",
-                        "The shared Question model is referenced from four tables. Prisma forces explicit relation names when this happens, which looks ugly once and then works forever.",
+                        "Each app has a __different runtime, different deploy target, and different lifetime__. One repo would slow everyone down. Separate repos mean I ship the Next.js app to Vercel, the Python tools live on Railway where slow cold starts do not matter, and my teammate can change his backend without breaking my frontend as long as the JSON shape stays the same.",
+                        "The contract between the apps is just two things - a list of allowed origins (so the browser can call across domains) and an agreed JSON shape for each endpoint.",
                     ],
+                },
+                {
+                    heading: "The database design",
+                    tldr: "One Prisma schema, two areas. ~~A `Student` is **not** a `User`~~ - keeps OMR exams sign-up-free.",
+                    paragraphs: [
+                        "Two main areas of data, sharing one database. **Area 1** is the question bank and folders - users own folders, folders hold questions, other users can be invited as owner, editor, or viewer. **Area 2** is the exams - a test holds questions, students take it, each answer is saved.",
+                        "One unusual choice - ~~a `Student` is **not** a `User`~~. A student who only takes one OMR exam should not have to sign up. So the exam side has its own `Student` model with no login link. Cleaner, fewer accounts to manage.",
+                        "The `Question` model is shared by four other tables. Prisma asks for unique relation names when this happens, which looks ugly once and then works forever:",
+                    ],
+                    code: {
+                        language: "prisma",
+                        content:
+                            "model Question {\n  id              String                @id @default(auto()) @map(\"_id\") @db.ObjectId\n  folderQuestions FolderQuestion[]      @relation(\"QuestionToFolderQuestion\")\n  testQuestions   TestQuestion[]        @relation(\"QuestionToTestQuestion\")\n  testAnswers     TestAnswer[]          @relation(\"QuestionToTestAnswer\")\n  paperHistory    PaperHistoryQuestion[] @relation(\"QuestionToPaperHistoryQuestion\")\n}",
+                    },
                 },
                 {
                     heading: "Reordering questions without breaking everything",
+                    tldr: "__Fractional positions__ - drop between 2.0 and 3.0 = 2.5. No write storm. Tie-break on `questionId` for concurrent drags.",
                     paragraphs: [
-                        "When a teacher drags question 5 between 2 and 3, I do not renumber every row below. I use fractional positions instead. The new position is just (2.0 + 3.0) / 2 = 2.5. No write storm.",
-                        "When two users drag at the same time, a deterministic tie-breaker on questionId stops the visual flap. A unique (folderId, position) index stops collisions at the database level.",
+                        "When a teacher drags question 5 between question 2 and question 3, two things can go wrong - the app could update every row's number below the move (**slow**), or two users dragging at the same time could fight.",
+                        "I used a trick called __fractional positions__. Instead of integer positions (1, 2, 3...), I use floats (1.0, 2.0, 3.0...). To put a question between `2.0` and `3.0`, I just save `2.5`. No other rows change. To put one between `2.0` and `2.5`, save `2.25`. And so on.",
+                        "When two users drag at the same time and pick the same number, I break the tie using the `questionId`. Boring rule, never fails.",
                     ],
                 },
                 {
                     heading: "The PDF maker",
+                    tldr: "Singleton **Puppeteer + Chromium**. Cold ~4s -> warm ~600ms. Plus a CI guard so the missing-binary bug cannot come back quietly.",
                     paragraphs: [
-                        "Server-side PDFs use Puppeteer + @sparticuz/chromium. Cold start is about 4 seconds. With a singleton browser kept alive across warm invocations, that drops to about 600 ms.",
-                        "The build also copies the right Prisma query engine binary into the deploy bundle - missed once, broke production, fixed with a webpack plugin step plus a CI check that fails the build if the binary is missing.",
+                        "The most-loved feature is **click a button, get a clean question paper PDF**. Doing this on a server is hard because the browser engine (Chromium) is huge.",
+                        "**Problem 1 - cold start is slow.** The first PDF after a long pause takes about 4 seconds because Chromium has to start. After that, about 600 ms. Fix - keep one Chromium running and reuse it. If Chromium dies, the listener clears the saved one so the next call starts a fresh one.",
+                        "**Problem 2 - 'query engine not found' on Vercel.** Prisma needs a small binary file to talk to the database. With my custom Prisma setup, ~~that file did not get copied to the deploy bundle~~. The deploy died. Fix - a build step that copies the file into the bundle, plus a CI check that fails the build if the file is missing. __So this bug cannot come back quietly.__",
                     ],
                     code: {
                         language: "ts",
                         content:
                             "let browserPromise: Promise<Browser> | null = null\n\nexport async function getBrowser() {\n  if (!browserPromise) {\n    browserPromise = puppeteer.launch({\n      args: chromium.args,\n      executablePath: await chromium.executablePath(),\n      headless: chromium.headless,\n    })\n    const browser = await browserPromise\n    browser.on('disconnected', () => { browserPromise = null })\n  }\n  return browserPromise\n}",
                     },
+                    video: "https://ik.imagekit.io/vinodkr/eduents-blog-4.webm/ik-video.mp4?tr=orig",
                 },
                 {
-                    heading: "Live collaboration as a dumb relay",
+                    heading: "Math on screen vs math in the PDF",
+                    tldr: "Two engines - **MathJax** for PDF (pixel-perfect), **KaTeX** for screen (fast). One small patch closes the gap.",
                     paragraphs: [
-                        "The WebSocket server is intentionally dumb. It just passes messages around. It does not save anything to the database.",
-                        "All saving is done by normal server actions in the main Next.js app. Two reasons - WebSockets can drop mid-message, and one write path means one source of truth. The cost is one extra HTTP request per change. Worth it for the audit trail.",
+                        "Math is everywhere in EdTech. I used two tools because no single one does both jobs well - **MathJax** on the PDF side (slow but pixel-perfect) and **KaTeX** on the screen side (fast and good enough for editing).",
+                        "The same formula does not look identical in both. So I wrote a small helper called `jaxUtils.ts` that fixes a few known differences (font alignment, a white-on-white bug) right before the PDF screenshot. The result is __very close, not identical, looks fine to a human__.",
                     ],
                 },
                 {
-                    heading: "Vision LLM lessons",
+                    heading: "Live collaboration without scary bugs",
+                    tldr: "WS server is __dumb on purpose__ - it just relays. Saving lives in server actions. One write path, no two-writer races.",
                     paragraphs: [
-                        "The bug that ate the most days - phone-camera scans were getting cropped at the wrong place. Reason: vision models silently rotated images using EXIF metadata, but my cropper read raw pixels. The fix was to bake EXIF rotation into pixels before any other step. One sharp(...).rotate() call, one bug class gone.",
-                        "Other lessons - resize images to 1024x1024 before sending (cost), retry vision API calls with backoff (reliability), repair LaTeX backslashes before JSON.parse (broken JSON about half the time).",
+                        "When two teachers edit the same folder, their changes should show up live. I built a small WebSocket server that does this.",
+                        "The server is __dumb on purpose__. It just passes messages around. It does **not** save anything to the database. All saving is done by normal server actions in the main Next.js app.",
+                        "**Why split it this way?** A WebSocket can disconnect mid-message - a server action either fully saves or fails clean. Only one place writes to the database - no two-writers fighting. The cost is one extra HTTP request per change. Worth it for the safety.",
+                        "The connect rule is strict - if the client does not send `folderId`, `userId`, and `userName`, the server slams the door:",
+                    ],
+                    code: {
+                        language: "js",
+                        content:
+                            "const folderId = url.searchParams.get('folderId')\nconst userId = url.searchParams.get('userId')\nconst userName = url.searchParams.get('userName')\nif (!folderId || !userId || !userName) {\n  ws.close(1008, 'Missing required parameters')\n  return\n}",
+                    },
+                },
+                {
+                    heading: "One middleware, three jobs",
+                    tldr: "`middleware.ts` does CORS + auth + onboarding in one pass. Skip the layout-redirect-loop trap.",
+                    paragraphs: [
+                        "One file, `eduents/middleware.ts`, runs on every request and does three things in one pass:",
+                    ],
+                    bullets: [
+                        "**CORS** - check the request comes from an allowed origin.",
+                        "**Login check** - if the user is not logged in, send them to the sign-in page.",
+                        "**Onboarding check** - if the user has not finished sign-up, send them to the onboarding form.",
+                        "Putting the onboarding step here (and not inside the page layout) avoids a bug where Clerk and my code redirect each other in a loop. ~~I learned that one the hard way.~~",
+                    ],
+                },
+                {
+                    heading: "Reading questions from PDFs",
+                    tldr: "PDF -> PNG -> rotate -> vision LLM (boxes) -> vision LLM (text/options) -> crop -> stream progress to UI.",
+                    paragraphs: [
+                        "In `eduents/lib/school-test/`, my TypeScript code does these steps for each page of a PDF:",
+                    ],
+                    bullets: [
+                        "Turn the PDF page into a **PNG image**.",
+                        "Fix the image rotation. Phone cameras save photos with a hidden 'this side up' tag. Some tools read the tag, others ignore it. ~~If they disagree, the image is sideways.~~",
+                        "Send the image to a **vision model**. Get back a list of where the question images are.",
+                        "Send the image again with a different prompt. Get back the question **text and options as JSON**.",
+                        "**Crop** out each question image using the boxes from step 3.",
+                        "Send progress updates to the browser as each page finishes, so the user does not stare at a blank spinner.",
+                    ],
+                    video: "https://res.cloudinary.com/dxy88r7fu/video/upload/v1778142506/eduents-blog-6_mewhvr.mp4",
+                },
+                {
+                    heading: "OMR grading",
+                    tldr: "One server action does the lot - parse, save Student, save answers, score, return.",
+                    paragraphs: [
+                        "`/api/omr/checker` is one server action that does the whole grading job in one go:",
+                    ],
+                    bullets: [
+                        "Takes the scanned and parsed sheet.",
+                        "Creates a `Student` record (no login needed).",
+                        "Saves the student's answers.",
+                        "Counts the score and percentage.",
+                        "Returns the result.",
+                        "One block of code, one place to look if a number is wrong. __No queue or background job__ - the load is small enough that this is fine for now.",
+                    ],
+                },
+                {
+                    heading: "Cross-app calls",
+                    tldr: "Hand-edited allowed-origins list lives in middleware. ~~Sounds primitive~~ - but adding a new origin needs a code review.",
+                    paragraphs: [
+                        "The four side apps call the main app from a different domain. The browser blocks this by default. To allow it, the main app keeps a list of allowed origins in its middleware.",
+                        "There is no fancy service registry. The list is hand-edited. That sounds primitive but is actually __safer__ - adding a new origin needs a code review.",
                     ],
                 },
                 {
                     heading: "Bugs that ate days",
+                    tldr: "Each one ended with a **fix + a guard** so it cannot come back quietly.",
                     bullets: [
-                        "Prisma 'query engine not found' on Vercel - fixed with a build-time copy + a CI guard.",
-                        "Phone-camera scans cropped wrong - fixed by baking EXIF rotation into pixels before any other step.",
-                        "Vision-model JSON broke JSON.parse - fixed with a small repair function plus three retries.",
-                        "Onboarding redirect loops - silent error in completeOnboarding; fixed with try/catch, logs, and a clear error screen.",
-                        "Math drift between PDF and screen - patched MathJax SVG output in jaxUtils.ts before screenshot.",
-                        "Concurrent reorder collisions - tie-breaker on questionId plus a unique (folderId, position) index.",
+                        "**'Query engine not found' on every Vercel deploy.** A Prisma file did not get bundled. Fix - a build step that copies it, plus a CI check that fails if it is missing.",
+                        "**Phone-camera scans cropped the wrong region.** Image rotation tag was being read by the vision model but ignored by my cropper. Fix - bake the rotation into the pixels before any other step.",
+                        "**Vision model JSON broke `JSON.parse`.** LaTeX backslashes inside the text broke parsing. Fix - a small repair function plus three retries.",
+                        "**Onboarding redirect loops.** A silent error in my onboarding code left users bouncing forever. Fix - try/catch with logs and a clear error screen.",
+                        "**Math PDF looked different from math on screen.** Two different math engines render differently. Fix - a small patch step before each PDF screenshot.",
+                        "**Two users picking the same drag position.** Fix - tie-break by `questionId`, plus a unique index on `(folder, position)`.",
                     ],
                 },
                 {
-                    heading: "What I want a hiring manager to take from this",
+                    heading: "Things I want to fix next",
+                    tldr: "Honest backlog. Security debt up top.",
                     bullets: [
-                        "I can own a complex Next.js + Prisma + MongoDB system end-to-end - schema, middleware, server actions, PDF generation, real-time collab, vision LLM integration.",
-                        "I work cleanly with code I do not own - my teammate's Python services and mine meet at simple JSON contracts, no shared state.",
-                        "I make trade-offs out loud. Singleton Puppeteer, dumb-relay WebSocket, fractional positions, two math engines - each chosen with the cost stated.",
-                        "I close bugs at the root. Each bug above ended with either a fix or a CI check so it cannot return quietly.",
+                        "Move all secret keys off the frontend. The image checker still reads a service-role key in the browser. ~~Security debt.~~",
+                        "Decommission the second Supabase project. We migrated, never finished cleanup.",
+                        "Add fuzzy matching for section names in the extractor.",
+                        "Put OMR grading behind a queue once we get to a point where 100s of students grade at once.",
+                    ],
+                },
+                {
+                    heading: "Why I wrote this",
+                    tldr: "If you are skimming - this is what I want you to remember.",
+                    paragraphs: [
+                        "I built Eduents because a teacher I know was spending **six hours a week** building question papers in Word and grading OMR sheets by hand. Multiply that by ten teachers, then by ten institutes - __real time, real money__.",
+                        "If you are hiring, what I want you to take from this:",
+                    ],
+                    bullets: [
+                        "__I can own a full Next.js + Prisma + MongoDB system__ - schema, middleware, server actions, PDF pipeline, live collab.",
+                        "I work cleanly with code I do not own - my teammate's Python services and mine meet at simple JSON, no shared state.",
+                        "I make trade-offs out loud - keep one browser warm, dumb-relay WebSocket, fractional positions, two math engines. **Each one has a stated cost.**",
+                        "I close bugs at the root, not at the symptom. Each bug above ended with either a fix or a CI check so it cannot come back quietly.",
                     ],
                 },
             ],
+            contactCta: {
+                title: "Want to work together?",
+                message:
+                    "Open to full-time roles and freelance projects. If you are building something hard - real-time, AI pipelines, complex schemas, anything where the boring layers eat your week - drop a message.",
+                email: "vinodkumarmurmu62@gmail.com",
+                github: "https://github.com/vin-dKR",
+                linkedin: "https://linkedin.com/in/vinodkrs",
+                twitter: "https://twitter.com/always_VinodKr",
+            },
         }
     },
     {
